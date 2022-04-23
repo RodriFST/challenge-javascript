@@ -34,6 +34,11 @@ const {
 
 function exponencial(exp) {
 
+
+    return function(num){
+       return num ** exp
+    }
+
 }
 
 // ----- Recursión -----
@@ -69,8 +74,22 @@ function exponencial(exp) {
 // haciendo los movimientos SUR->ESTE->NORTE
 // Aclaraciones: el segundo parametro que recibe la funcion ('direccion') puede ser pasado vacio (null)
 
-function direcciones(laberinto) {
 
+
+    function direcciones(laberinto, array=[] ) {
+
+        for(let dir in laberinto){
+            if(typeof laberinto[dir]==="object"){
+                array.push(dir)
+                return direcciones(laberinto[dir],array)
+            }
+            if(laberinto[dir]==="destino"){
+                array.push(dir)
+                return array.join("")
+            }
+        }
+        return ""
+    
 }
 
 
@@ -87,9 +106,22 @@ function direcciones(laberinto) {
 // deepEqualArrays([0,1,2], [0,1,2,3]) => false
 // deepEqualArrays([0,1,[[0,1,2],1,2]], [0,1,[[0,1,2],1,2]]) => true
 
-function deepEqualArrays(arr1, arr2) {
 
-}
+
+    function deepEqualArrays(arr1, arr2) {
+        if(arr1.length !== arr2.length) return false
+         for(let i = 0; i < arr1.length -1; i++){
+           if(typeof arr1 && arr2 === "string") return true
+           if(arr1[i] === arr2[i]) return true
+           if(Array.isArray(arr1[i], arr2[i])){
+            deepEqualArrays(arr1[i], arr2[i])
+           }else{
+               return false
+           }
+         }
+         return false
+       }
+
 
 
 
@@ -138,9 +170,35 @@ OrderedLinkedList.prototype.print = function(){
 // > LL.print()
 // < 'head --> 5 --> 3 --> 1 --> null'
 //               4
-OrderedLinkedList.prototype.add = function(val){
+
     
-}
+    OrderedLinkedList.prototype.add = function(value){
+        let  nuevoNodo = new Node(value); // creo nodo 
+          if(!this.head){
+            this.head = nuevoNodo;
+          } else{
+            if(nuevoNodo.value > this.head.value){ // agrega por encima de la cabeza
+              nuevoNodo.next = this.head;
+              this.head = nuevoNodo;
+            }else{
+              if(this.head.next){ //  7 5 4 3 
+                let current = this.head, ant = this.head, flag = true;
+                while(current != null && flag){
+                  if(value< current.value && value > current.next.value){
+                    flag = false;
+                  }
+                  ant = current;
+                  current = current.next;
+                }
+                ant.next = nuevoNodo;
+                nuevoNodo.next = current;
+              }else {
+                this.head.next = nuevoNodo; // 7 4 agrega el nodo despues de la cabeza para cuando es el segundo elemento a gregar
+              }
+            }
+          }
+        }
+
 
 
 // EJERCICIO 5
@@ -160,7 +218,14 @@ OrderedLinkedList.prototype.add = function(val){
 
 OrderedLinkedList.prototype.removeHigher = function(){
     
-}
+        if(!this.head) return null;
+        let aux = this.head.value;
+        this.head = this.head.next;
+        return aux;
+    }
+
+    
+
 
 
 // EJERCICIO 6
@@ -180,6 +245,23 @@ OrderedLinkedList.prototype.removeHigher = function(){
 
 OrderedLinkedList.prototype.removeLower = function(){
     
+        if(!this.head) return null
+        if(!this.head.next){ 
+            let aux  = this.head.value;
+            this.head = null;
+            return aux;
+        }
+    
+        let current = this.head, previus = this.head;
+        while(current.next != null){
+            previus = current;
+            current = current.next;
+        }
+        let aux  = current.value;
+        previus.next = null;
+        return aux;
+    
+    
 }
 
 
@@ -189,7 +271,7 @@ OrderedLinkedList.prototype.removeLower = function(){
 // EJERCICIO 7
 // Implementar la funcion multiCallbacks:
 // la funcion multiCallbacks recibe dos arrays de objetos cuyas propiedades son dos,
-// 'cb' que es una funcion, y 'time' que es el tiempo estimado de ejecucion de dicha funcion 
+// 'cb' que es una funcion, y 'time' que es el tiempo estimado de ejecucion de dicha funcion       //
 // este ultimo representado con un integer como se muestra acontinuacion:
 // let cbsExample = [
 //     {cb:function(){}, time: 2},
@@ -212,8 +294,14 @@ OrderedLinkedList.prototype.removeLower = function(){
 // < ["2-1", "1-1", "1-2", "2-2"];
 
 function multiCallbacks(cbs1, cbs2){
-    
-}
+    let objs = (cbs1.concat(cbs2))  //une dos array
+    objs.sort((a, b) => a['time']- b['time']); // ordena los arrays me menor a mayor tiempo objeto
+    let aux = [] // defino un array aux
+    for(let i = 0; i < objs.length; i++){ // recorro el array conactenado
+        aux[objs[i]['time']-1] = objs[i]['cb'](); // guardo en la posicion dada por el time-1 dentro de nuestro array, el resultado de la funcion callback
+    }
+    return aux; // retorno array aux;
+  }
 
 
 
@@ -230,8 +318,15 @@ function multiCallbacks(cbs1, cbs2){
 // 5   9
 // resultado:[5,8,9,32,64]
 
-BinarySearchTree.prototype.toArray = function() {
-    
+BinarySearchTree.prototype.toArray = function(array = []) {
+    if(this.left !== null){
+        this.left.toArray(array)
+    }
+    array.push(this.value)
+    if(this.right !== null){
+        this.right.toArray(array)
+    }
+    return array.sort((a,b) => a - b);
 }
 
 
@@ -250,8 +345,15 @@ BinarySearchTree.prototype.toArray = function() {
 // informarse sobre algoritmos, leerlos de un pseudocodigo e implemnterlos alcanzara
 
 function primalityTest(n) {
-    
+    if (n <= 1) return false; 
+if (n % 2 == 0 && n > 2) return false; 
+let s = Math.sqrt(n); 
+for(let i = 3; i <= s; i += 2) { 
+    if(n % i === 0) return false; 
 }
+return true;
+}
+
 
 
 // EJERCICIO 10
@@ -282,9 +384,16 @@ function quickSort(array) {
 // > reverse(95823);
 // < 32859
 
-function reverse(num){
-    
-}
+
+    function reverse(num){
+        let aux = "";
+        while(num !== 0){
+          aux += num%10;
+          num = parseInt(num/10);
+        }
+        return parseInt(aux);
+    }
+
 // la grandiosa resolucion de Wilson!!!
 // declaran una variable donde 
 // almacenar el el numero invertido
